@@ -1532,14 +1532,23 @@ provide(DOM);
 (function() {
 
 var origDefine = modules.define;
+var storedDeps = [];
+var iBemDomInitDefined = false;
 
 modules.define = function(name, deps, decl) {
     origDefine.apply(modules, arguments);
 
-    name !== 'i-bem__dom_init' && arguments.length > 2 && ~deps.indexOf('i-bem__dom') &&
-        modules.define('i-bem__dom_init', [name], function(provide, _, prev) {
-            provide(prev);
-        });
+    if (name !== 'i-bem__dom_init' && arguments.length > 2 && ~deps.indexOf('i-bem__dom')) {
+        storedDeps.push(name);
+        if (!iBemDomInitDefined) {
+            iBemDomInitDefined = true;
+            modules.define('i-bem__dom_init', storedDeps, function(provide, _, prev) {
+                provide(arguments[arguments.length - 1]);
+            });
+        }
+
+    }
 };
 
 })();
+
