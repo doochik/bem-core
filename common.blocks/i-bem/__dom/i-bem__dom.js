@@ -1540,10 +1540,17 @@ modules.define = function(name, deps, decl) {
 
     if (name !== 'i-bem__dom_init' && arguments.length > 2 && ~deps.indexOf('i-bem__dom')) {
         storedDeps.push(name);
+
+        // workaround for Firefox fn.call stack limit
+        // @see https://bugzilla.mozilla.org/show_bug.cgi?id=966173
         if (!iBemDomInitDefined) {
             iBemDomInitDefined = true;
             modules.define('i-bem__dom_init', storedDeps, function(provide, _, prev) {
                 provide(arguments[arguments.length - 1]);
+
+                // clear stored data for dynamically loaded modules
+                storedDeps = [];
+                iBemDomInitDefined = false;
             });
         }
 
